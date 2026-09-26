@@ -1,0 +1,36 @@
+// SPDX-License-Identifier: MIT
+
+pragma solidity 0.8.24;
+
+import {IERC20, IERC20Metadata, ERC20} from "../dependencies/openzeppelin/token/ERC20/ERC20.sol";
+import {IVPool} from "../interfaces/external/IVPool.sol";
+
+contract VPoolMock is IVPool, ERC20 {
+    address public token;
+
+    constructor(string memory name_, string memory symbol_, address token_) ERC20(name_, symbol_) {
+        token = token_;
+    }
+
+    function deposit(uint256 amount_) external {
+        IERC20(token).transferFrom(msg.sender, address(this), amount_);
+        _mint(msg.sender, amount_ * (10 ** (decimals() - IERC20Metadata(token).decimals())));
+    }
+
+    function withdraw(uint256 shares_) external {
+        _burn(msg.sender, shares_);
+        IERC20(token).transfer(msg.sender, shares_ / (10 ** (decimals() - IERC20Metadata(token).decimals())));
+    }
+
+    function mint(address to_, uint256 amount_) external {
+        _mint(to_, amount_);
+    }
+
+    function poolRewards() external pure returns (address) {
+        revert("mock-does-not-implement");
+    }
+
+    function pricePerShare() external pure returns (uint256) {
+        revert("mock-does-not-implement");
+    }
+}
